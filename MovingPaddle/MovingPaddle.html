@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+</head>
+
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<script>
+
+var canvas;
+var canvasContext;
+
+
+
+var mouseX;
+var mouseY;
+
+window.onload = function() {
+	canvas = document.getElementById('gameCanvas');
+	canvasContext = canvas.getContext('2d');
+	
+	var framesPerSecond = 30;
+	setInterval(updateAll, 1000/framesPerSecond);
+	canvas.addEventListener('mousemove', updateMousePos)
+	
+		brickReset();
+}
+function updateMousePos(evt){
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+
+	mouseX = evt.clientX - rect.left - root.scrollLeft;
+	// for future Y value of mouse position
+	mouseY = evt.clientY - rect.top - root.scrollTop;
+	paddleX = mouseX - PADDLE_WIDTH/2;
+	
+	//cheat/ hack to test ball in any position
+	/*ballX = mouseX;
+	ballY = mouseY;
+	ballSpeedX = -3;
+	ballSpeedY = -3;
+	*/
+	
+}
+
+//ball var/constants
+var ballX = 400;
+var ballY = 400;
+var ballRadius = 10;
+var ballSpeedX = 5;
+var ballSpeedY = 5;
+
+//paddle vars/constants
+const PADDLE_WIDTH = 150;
+const PADDLE_THICKNESS = 10;
+var paddleX = 0;
+var paddleY = 500;
+
+const BRICK_WIDTH = 80;
+const BRICK_HEIGHT = 20;
+const BRICK_COLUMNS = 10;
+const BRICK_ROWS = 14;
+const BRICK_GAP = 3;
+var brickCount = 0;
+var brickGrid = new Array(BRICK_COLUMNS * BRICK_ROWS);
+
+function updateAll(){
+	moveAll();
+	drawAll();
+}
+
+function ballMove(){
+	//ball movement
+	ballX += ballSpeedX;
+		//bounce condition for X wall
+	if (ballX <= 0 && ballSpeedX < 0.0){
+		ballSpeedX *= -1;
+	}
+		if (ballX >= canvas.width && ballSpeedX > 0.0){
+		ballSpeedX *= -1;
+	}
+	
+	ballY+= ballSpeedY;
+		//bounce condition for Y wall
+	if (ballY <= 0 && ballSpeedY < 0.0){
+		ballSpeedY *= -1;
+	}
+		//ballReset condition
+	if (ballY >= canvas.height){
+		ballReset();
+		brickReset();
+	}
+}
+function ballBrickHandling(){
+	//bricks delete under ball
+	var ballBrickCol = Math.floor(ballX / BRICK_WIDTH);
+	var ballBrickRow = Math.floor(ballY / BRICK_HEIGHT);
+	var brickIntexUnderBall = rawColToArrayIntex(ballBrickCol, ballBrickRow);
+	
+	if(ballBrickCol >= 0 && ballBrickCol < BRICK_COLUMNS &&
+	ballBrickRow >= 0 && ballBrickRow < BRICK_ROWS ){
+		if (brickGrid[brickIntexUnderBall]){
+			brickGrid[brickIntexUnderBall] = false;
+			brickCount--;
+			console.log(brickCount);
+			
+			var prevBallX = ballX - ballSpeedX;
+			var prevBallY = ballY - ballSpeedY;
+			var prevBrickCol = Math.floor(prevBallX / BRICK_WIDTH);
+			var prevBrickRow = Math.floor(prevBallY / BRICK_HEIGHT);
+			
+			var bothTestFailed = true;
+				if (prevBrickCol != ballBrickCol){
+					var adjBrickSide = rawColToArrayIntex(prevBrickCol, ballBrickRow)
+					if (brickGrid[adjBrickSide] == false){
+						ballSpeedX *= -1;
+						bothTestFailed = false;
+					}
+					
+				}
+				if (prevBrickRow != ballBrickRow){
+					var adjBrickTopBot = rawColToArrayIntex(ballBrickCol, prevBrickRow)
+						if (brickGrid[adjBrickTopBot] == false){
+							ballSpeedY *= -1;
+							bothTestFailed = false;
+						}
+				}
+				if (prevBrickRow >= BRICK_ROWS){
+					ballSpeedY *= -1;
+					bothTestFailed = false;
+				}
+				if (bothTestFailed){
+					ballSpeedX *= -1;
+					ballSpeedY *= -1;
+				}
+				
+		} //end of brickIntexCheck, false assignment after colisiton, speedDirection change
+	} //end of ballWithin bricks space
+} //end of ballBrickHandling function
+function ballPaddleHandling(){
+			//bounce condition PADDLE
+	var ballCircumferenceBottom = ballY + ballRadius;
+	if (ballX > paddleX && ballX < paddleX + PADDLE_WIDTH){
+		if (ballCircumferenceBottom >= paddleY && ballCircumferenceBottom <= paddleY + PADDLE_THICKNESS){
+			ballSpeedY *= -1;
+			var centerOfPaddleX = paddleX + PADDLE_WIDTH/2;
+			var ballDistanceFromPaddleCenterX = ballX - centerOfPaddleX;
+			ballSpeedX = ballDistanceFromPaddleCenterX*0.2;
+		}
+	}
+}
+function moveAll(){
+	ballMove();
+	ballPaddleHandling();
+	ballBrickHandling();
+}
+
+function ballReset(){
+	ballX = canvas.width/2;
+	ballY = canvas.height/2;
+}
+
+function drawAll(){
+	//canvas background black
+	colorRectangle("black", 0, 0, canvas.width, canvas.height);
+	//ball
+	colorBall("white", ballX, ballY, ballRadius);
+	//paddle
+	colorRectangle("white", paddleX, paddleY, PADDLE_WIDTH, PADDLE_THICKNESS);
+	//bricks
+	drawBricks("blue");
+	
+	//mouseCoordinates
+	//colorText("X:"  + mouseX + ", Y:" + mouseY, mouseX + 10, mouseY + 10, "red");
+	var mouseBrickCol = Math.floor(mouseX / BRICK_WIDTH);
+	var mouseBrickRow = Math.floor(mouseY / BRICK_HEIGHT);
+	var brickIntexUnderMouse = rawColToArrayIntex(mouseBrickCol, mouseBrickRow);
+	colorText(mouseBrickCol + ", " + mouseBrickRow + "; " + brickIntexUnderMouse, mouseX + 10, mouseY + 10, "red");
+
+
+}
+
+
+//auxilary draw functions
+function colorRectangle(color, positionX, positionY, width, height){
+	canvasContext.fillStyle = color;
+	canvasContext.fillRect(positionX,positionY,width, height);
+}
+function colorBall(color, positionX, positionY, radius){
+	canvasContext.fillStyle = color;
+	canvasContext.beginPath();
+	canvasContext.arc(positionX,positionY,radius,0,Math.PI*2, true);
+	canvasContext.fill();
+}
+
+
+function rawColToArrayIntex(col, row){
+	return col + BRICK_COLUMNS * row;
+}
+function drawBricks(color){
+
+	canvasContext.fillStyle = color;
+	for (var eachRow = 0; eachRow < BRICK_ROWS; eachRow++){
+		for (var eachCol = 0; eachCol < BRICK_COLUMNS; eachCol++){
+			var arrayIndex = rawColToArrayIntex(eachCol, eachRow);
+			
+			if (brickGrid[arrayIndex]){
+				canvasContext.fillRect(BRICK_WIDTH * eachCol, BRICK_HEIGHT * eachRow, BRICK_WIDTH - BRICK_GAP, BRICK_HEIGHT - BRICK_GAP);
+			} //end of is this brick here
+			
+		} //end of for each brick in column
+	} // end of rows count
+} //end of drawBrick function
+
+function brickReset(){
+	brickCount = 0;
+	var i;
+	for (i = 0; i< 3 * BRICK_COLUMNS; i++){
+		brickGrid[i] = false;
+	}
+	for(; i <brickGrid.length; i++){
+		brickGrid[i] = true;
+		brickCount++;
+	}
+}
+function colorText(showWords, textX,textY, fillColor){
+	canvasContext.fillStyle = fillColor;
+	canvasContext.fillText(showWords, textX, textY);
+}
+
+</script>
+</body>
+</html>
