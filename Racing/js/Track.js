@@ -15,7 +15,7 @@ var trackGrid = [3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 				 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
 				 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
 				 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-				 5, 0, 2, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+				 5, 2, 2, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
 				 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
 				 1, 0, 0, 4, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1,
 				 1, 0, 0, 4, 0, 0, 1, 3, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
@@ -28,28 +28,25 @@ const TRACK_FOREST = 3;
 const TRACK_FINISHLINE = 4;
 const TRACK_START = 5;
 
+
+
 function drawTracks(){
 	canvasContext.fillStyle = TRACK_COLOR;
+	var arrayIndex = 0;
+	var drawTileX = 0;
+	var drawTileY = 0;
+	
 	for (var eachRow = 0; eachRow < TRACK_ROWS; eachRow++){
 		for (var eachCol = 0; eachCol < TRACK_COLUMNS; eachCol++){
-			var arrayIndex = rowColToArrayIntex(eachCol, eachRow);
-		
-			if (trackGrid[arrayIndex] == TRACK_ROAD){
-				canvasContext.drawImage(trackRoadPic, TRACK_WIDTH * eachCol, TRACK_HEIGHT * eachRow);
-			}
-			if (trackGrid[arrayIndex] == TRACK_WALL){
-				canvasContext.drawImage(trackWallPic, TRACK_WIDTH * eachCol, TRACK_HEIGHT * eachRow);
-			}
-			if (trackGrid[arrayIndex] == TRACK_FOREST){
-				canvasContext.drawImage(trackForestPic, TRACK_WIDTH * eachCol, TRACK_HEIGHT * eachRow);
-			}
-			if (trackGrid[arrayIndex] == TRACK_FINISHLINE){
-				canvasContext.drawImage(trackFinishLinePic, TRACK_WIDTH * eachCol, TRACK_HEIGHT * eachRow);
-			}
-			if (trackGrid[arrayIndex] == TRACK_START){
-				canvasContext.drawImage(trackStartPic, TRACK_WIDTH * eachCol, TRACK_HEIGHT * eachRow);
-			}
+			var tileKindHere = trackGrid[arrayIndex];
+			var useImg = trackPics[tileKindHere];
 			
+			canvasContext.drawImage(useImg, drawTileX, drawTileY);
+			arrayIndex++;
+			drawTileX += TRACK_WIDTH;
 		} //end of for each track in column
+		drawTileX = 0;
+		drawTileY += TRACK_HEIGHT;
 	} // end of rows count
+	drawTileY = 0;
 } //end of drawTrack function
