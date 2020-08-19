@@ -5,10 +5,12 @@ const TRACTION = 0.1;
 const MIN_SPEED_TO_TURN = 0.1;
 
 function carClass() {
+	
+	this.name = "Untitled CAR";
 
 	this.X = 75;
 	this.Y = 75;
-	this.Angle = 3*Math.PI/2;
+	this.Angle = 0;
 	this.Speed = 0;
 	this.pic
 	
@@ -29,8 +31,11 @@ function carClass() {
 		this.controlKeyLeft = leftKey;
 	}
 	
-	this.reset = function (whichImage){
+	this.reset = function (whichImage, carName){
 		this.pic = whichImage;
+		this.name = carName;
+		this.Speed = 0;
+		this.Angle = 3*Math.PI/2;
 		
 		for (var eachRow = 0; eachRow < TRACK_ROWS; eachRow++){
 			for (var eachCol = 0; eachCol < TRACK_COLUMNS; eachCol++){
@@ -69,6 +74,16 @@ function carClass() {
 	this.draw = function(){
 		drawBitmapCenteredWithRotation(this.pic, this.X, this.Y, this.Angle);
 	}
+	
+	function returnTileTypeAtColRow(col, row){
+		if(col >= 0 && col < TRACK_COLUMNS &&
+			row >= 0 && row < TRACK_ROWS){
+				var trackIndexUnderCoord = rowColToArrayIntex(col, row);
+				return (trackGrid[trackIndexUnderCoord]);
+			} else {
+				return TRACK_WALL;
+			}
+	}
 
 	this.trackHandling = function(){
 		//tracks delete under car
@@ -78,14 +93,14 @@ function carClass() {
 		
 		if(carTrackCol >= 0 && carTrackCol < TRACK_COLUMNS &&
 		carTrackRow >= 0 && carTrackRow < TRACK_ROWS ){
-			if (trackGrid[trackIntexUnderCar]){
-				if (this.Speed > 0) {
-					this.Speed -= 1;
-				}
-				if (this.Speed < 0) {
-					this.Speed += 1;
-				}
-			} //end of trackIntexCheck, false assignment after colisiton, speedDirection change
+			var tileHere = returnTileTypeAtColRow(carTrackCol, carTrackRow);
+			if (tileHere == TRACK_FINISHLINE){
+				console.log(this.name + " WON");
+				loadLevel(levelOne);
+			}
+			else if(tileHere != TRACK_ROAD){
+				this.Speed *= -0.5;
+			}
 		} //end of carWithin tracks space
 	} //end of carTrackHandling function
 }
