@@ -4,17 +4,18 @@ var canvasContext;
 window.onload = function() {
 	canvas = document.getElementById('gameCanvas');
 	canvasContext = canvas.getContext('2d');
-	
+	loadImages();
+}
+
+
+function imageLoadingDoneGameStart(){
 	var framesPerSecond = 30;
 	setInterval(updateAll, 1000/framesPerSecond);
 	
 	setupInput();
-	
-	carImageLoad();
-
 	carReset();
-	
 }
+
 
 function updateAll(){
 	moveAll();
@@ -27,14 +28,9 @@ function moveAll(){
 	carTrackHandling();
 }
 
-function clearScreen(){
-		colorRectangle("black", 0, 0, canvas.width, canvas.height);
-}
-
 function drawAll(){
-	clearScreen();
-	drawCar();
 	drawTracks();
+	drawCar();
 	
 	//mouseCoordinates
 	//colorText("X:"  + mouseX + ", Y:" + mouseY, mouseX + 10, mouseY + 10, "red");

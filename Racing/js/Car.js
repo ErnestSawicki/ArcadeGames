@@ -1,5 +1,4 @@
-var carPic = document.createElement("img");
-var carPicLoaded = false;
+
 
 //car var/constants
 var carX = 75;
@@ -13,12 +12,7 @@ const DRIVE_POWER = 0.3
 const BRAKES_POWER = 0.6;
 const TRACTION = 0.1;
 
-function carImageLoad(){
-	carPic.onload = function(){
-	 carPicLoaded = true;
-	}
-	carPic.src = "player1car.png";
-}
+
 
 function carMove(){
 	carSpeed *= GROUNDSPEED_DECAY_MULT;
@@ -59,9 +53,7 @@ function carTrackHandling(){
 } //end of carTrackHandling function
 
 function drawCar(){
-	if(carPicLoaded){
 		drawBitmapCenteredWithRotation(carPic, carX, carY, carAngle);
-	}
 }
 
 function carReset(){
